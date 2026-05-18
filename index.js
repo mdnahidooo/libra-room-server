@@ -49,6 +49,15 @@ async function run() {
         });
 
 
+        app.post('/rooms', async (req, res) => {
+            const roomData = req.body;
+            // console.log(roomData);
+            const result = await roomCollection.insertOne(roomData);
+
+            res.send(result);
+        })
+
+
 
 
 
