@@ -48,6 +48,11 @@ async function run() {
             res.send(result);
         });
 
+        app.get("/featured", async (req, res) => {
+            const result = await roomCollection.find().sort({_id: -1}).limit(6).toArray()
+            res.json(result)
+        })
+
 
         app.post('/rooms', async (req, res) => {
             const roomData = req.body;
