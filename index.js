@@ -34,6 +34,7 @@ async function run() {
 
         const db = client.db("libra-room-db");
         const roomCollection = db.collection("rooms");
+        const bookingCollection = db.collection("bookings");
 
 
 
@@ -86,6 +87,17 @@ async function run() {
             
             res.send(result);
         })
+
+
+
+
+
+        app.post("/booking", async (req, res) => {
+            const bookingData = req.body;
+            const result = await bookingCollection.insertOne(bookingData);
+
+            res.json(result);
+        });
 
 
 
