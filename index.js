@@ -49,7 +49,7 @@ async function run() {
         });
 
         app.get("/featured", async (req, res) => {
-            const result = await roomCollection.find().sort({_id: -1}).limit(6).toArray()
+            const result = await roomCollection.find().sort({ _id: -1 }).limit(6).toArray()
             res.json(result)
         })
 
@@ -63,6 +63,13 @@ async function run() {
         })
 
 
+
+        app.delete('/rooms/:roomId', async (req, res) => {
+            const { roomId } = req.params;
+            const result = await roomCollection.deleteOne({ _id: new ObjectId(roomId) });
+            
+            res.send(result);
+        })
 
 
 
