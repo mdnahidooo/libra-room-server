@@ -35,6 +35,7 @@ const verifyToken = async (req, res, next) => {
     const authHeader = req?.headers.authorization;
     if (!authHeader) {
         return res.status(401).json({ message: "Unauthorized" });
+        return next()
     }
     const token = authHeader.split(" ")[1];
     if (!token) {
@@ -63,12 +64,61 @@ async function run() {
 
 
 
-        app.get('/rooms', async (req, res) => {
-            const result = await roomCollection.find().toArray();
+        // app.get('/rooms', async (req, res) => {
+        //     const result = await roomCollection.find().toArray();
+        //     res.send(result);
+        // });
+
+
+
+        app.get("/rooms", async (req, res) => {
+            const { search, floor, amenities } = req.query;
+
+            let query = {};
+
+            // 1. SEARCH (name + description)
+            if (search) {
+                query.$or = [
+                    {
+                        name: {
+                            $regex: search,
+                            $options: "i",
+                        },
+                    },
+                    {
+                        description: {
+                            $regex: search,
+                            $options: "i",
+                        },
+                    },
+                ];
+            }
+
+            // 2. FLOOR FILTER
+            if (floor && floor !== "all") {
+                query.floor = Number(floor);
+            }
+
+            // 3. AMENITIES FILTER (array match)
+            if (amenities) {
+                const amenitiesArray = amenities.split(",");
+
+                query.amenities = {
+                    $in: amenitiesArray,
+                };
+            }
+
+            const result = await roomCollection.find(query).toArray();
+
             res.send(result);
         });
 
-        app.get('/rooms/:roomId',verifyToken, async (req, res) => {
+
+
+
+
+
+        app.get('/rooms/:roomId', async (req, res) => {
             const { roomId } = req.params;
             const result = await roomCollection.findOne({ _id: new ObjectId(roomId) });
             res.send(result);
@@ -91,7 +141,7 @@ async function run() {
 
 
 
-        app.patch("/rooms/:roomId", async (req, res) => {
+        app.patch("/rooms/:roomId",verifyToken, async (req, res) => {
             const { roomId } = req.params;
             const updatedData = req.body;
             // console.log(updatedData);
@@ -106,7 +156,7 @@ async function run() {
 
 
 
-        app.delete('/rooms/:roomId', async (req, res) => {
+        app.delete('/rooms/:roomId', verifyToken, async (req, res) => {
             const { roomId } = req.params;
             const result = await roomCollection.deleteOne({ _id: new ObjectId(roomId) });
 
