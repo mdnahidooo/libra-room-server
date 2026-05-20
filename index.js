@@ -35,7 +35,6 @@ const verifyToken = async (req, res, next) => {
     const authHeader = req?.headers.authorization;
     if (!authHeader) {
         return res.status(401).json({ message: "Unauthorized" });
-        return next()
     }
     const token = authHeader.split(" ")[1];
     if (!token) {
@@ -45,6 +44,7 @@ const verifyToken = async (req, res, next) => {
     try {
         const { payload } = await jwtVerify(token, JWKS);
         console.log(payload);
+        req.user = payload;
         next();
     } catch (error) {
         return res.status(403).json({ message: "Forbidden" });
@@ -141,7 +141,7 @@ async function run() {
 
 
 
-        app.patch("/rooms/:roomId",verifyToken, async (req, res) => {
+        app.patch("/rooms/:roomId", verifyToken, async (req, res) => {
             const { roomId } = req.params;
             const updatedData = req.body;
             // console.log(updatedData);
@@ -165,26 +165,122 @@ async function run() {
 
 
 
-        app.get("/booking", verifyToken, async (req, res) => {
+        app.get("/booking", async (req, res) => {
             const result = await bookingCollection.find().toArray();
             res.send(result);
         });
 
+
+
+        // app.get("/booking", async (req, res) => {
+        //     const userId = req.user?.sub;
+
+        //     const result = await bookingCollection
+        //         .find({ userId })
+        //         .toArray();
+
+        //     res.send(result);
+        // });
+
+
+
+
+        // app.post("/booking", async (req, res) => {
+        //     const bookingData = req.body;
+        //     const result = await bookingCollection.insertOne(bookingData);
+
+        //     res.json(result);
+        // });
+
+
+
+
         app.post("/booking", async (req, res) => {
             const bookingData = req.body;
-            const result = await bookingCollection.insertOne(bookingData);
 
-            res.json(result);
-        });
+            const { roomId, date, startTime, endTime, hourlyRate } = bookingData;
 
-        app.delete("/booking/:bookingId", async (req, res) => {
-            const { bookingId } = req.params;
-            const result = await bookingCollection.deleteOne({
-                _id: new ObjectId(bookingId),
+            const start = Number(startTime.split(":")[0]);
+            const end = Number(endTime.split(":")[0]);
+
+            if (start >= end) {
+                return res.status(400).json({
+                    message: "Invalid time range",
+                });
+            }
+
+            const normalizedDate = new Date(date).toISOString().split("T")[0];
+
+            const conflict = await bookingCollection.findOne({
+                roomId,
+                date: normalizedDate,
+                $or: [
+                    {
+                        startHour: { $lt: end },
+                        endHour: { $gt: start }
+                    }
+                ]
             });
 
-            res.json(result);
+            if (conflict) {
+                return res.status(409).json({
+                    message: "Time slot already booked",
+                });
+            }
+
+            const rate = Number(hourlyRate || 0);
+            const duration = end - start;
+            const totalPrice = duration * rate;
+
+            const newBooking = {
+                ...bookingData,
+                userId: req.user?.sub,
+                date: normalizedDate,
+                startHour: start,
+                endHour: end,
+                totalPrice,
+                status: "confirmed",
+                createdAt: new Date(),
+            };
+
+            const result = await bookingCollection.insertOne(newBooking);
+
+            res.send(result);
         });
+
+
+
+        app.patch("/booking/:bookingId", async (req, res) => {
+            const { bookingId } = req.params;
+
+            const result = await bookingCollection.updateOne(
+                { _id: new ObjectId(bookingId) },
+                {
+                    $set: {
+                        status: "cancelled",
+                        cancelledAt: new Date(),
+                    }
+                }
+            );
+
+            res.send(result);
+        });
+
+
+        // app.delete("/booking/:bookingId", async (req, res) => {
+        //     const { bookingId } = req.params;
+        //     const result = await bookingCollection.deleteOne({
+        //         _id: new ObjectId(bookingId),
+        //     });
+
+        //     res.json(result);
+        // });
+
+
+
+
+
+
 
         // Send a ping to confirm a successful connection
         await client.db("admin").command({ ping: 1 });
