@@ -84,13 +84,16 @@ async function run() {
         app.delete('/rooms/:roomId', async (req, res) => {
             const { roomId } = req.params;
             const result = await roomCollection.deleteOne({ _id: new ObjectId(roomId) });
-            
+
             res.send(result);
         })
 
 
 
-
+        app.get("/booking", async (req, res) => {
+            const result = await bookingCollection.find().toArray();
+            res.send(result);
+        });
 
         app.post("/booking", async (req, res) => {
             const bookingData = req.body;
