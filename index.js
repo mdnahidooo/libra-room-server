@@ -142,7 +142,7 @@ async function run() {
 
 
 
-        app.patch("/rooms/:roomId", verifyToken, async (req, res) => {
+        app.patch("/rooms/:roomId", verifyToken,  async (req, res) => {
             const { roomId } = req.params;
             const updatedData = req.body;
             // console.log(updatedData);
@@ -166,7 +166,7 @@ async function run() {
 
 
 
-        app.get("/booking", verifyToken, async (req, res) => {
+        app.get("/booking",verifyToken, async (req, res) => {
             const result = await bookingCollection.find().toArray();
             console.log(result);
             res.send(result);
@@ -247,12 +247,18 @@ async function run() {
 
             const result = await bookingCollection.insertOne(newBooking);
 
+            // ADDED FEATURE: increase booking count in room
+            await roomCollection.updateOne(
+                { _id: new ObjectId(roomId) },
+                { $inc: { bookingCount: 1 } }
+            );
+
             res.send(result);
         });
 
 
 
-        app.patch("/booking/:bookingId", verifyToken, async (req, res) => {
+        app.patch("/booking/:bookingId",verifyToken, async (req, res) => {
             const { bookingId } = req.params;
 
             const result = await bookingCollection.updateOne(
