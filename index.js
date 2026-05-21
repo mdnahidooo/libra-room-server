@@ -142,7 +142,7 @@ async function run() {
 
 
 
-        app.patch("/rooms/:roomId", verifyToken,  async (req, res) => {
+        app.patch("/rooms/:roomId", verifyToken, async (req, res) => {
             const { roomId } = req.params;
             const updatedData = req.body;
             // console.log(updatedData);
@@ -166,7 +166,7 @@ async function run() {
 
 
 
-        app.get("/booking",verifyToken, async (req, res) => {
+        app.get("/booking", verifyToken, async (req, res) => {
             const result = await bookingCollection.find().toArray();
             console.log(result);
             res.send(result);
@@ -197,7 +197,7 @@ async function run() {
 
 
 
-        app.post("/booking",  async (req, res) => {
+        app.post("/booking", async (req, res) => {
             const bookingData = req.body;
 
             const { roomId, date, startTime, endTime, hourlyRate } = bookingData;
@@ -252,7 +252,7 @@ async function run() {
 
 
 
-        app.patch("/booking/:bookingId", async (req, res) => {
+        app.patch("/booking/:bookingId", verifyToken, async (req, res) => {
             const { bookingId } = req.params;
 
             const result = await bookingCollection.updateOne(
