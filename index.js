@@ -33,6 +33,7 @@ const JWKS = createRemoteJWKSet(new URL(`${process.env.CLIENT_URL}/api/auth/jwks
 
 const verifyToken = async (req, res, next) => {
     const authHeader = req?.headers.authorization;
+    // console.log(authHeader);
     if (!authHeader) {
         return res.status(401).json({ message: "Unauthorized" });
     }
@@ -43,7 +44,7 @@ const verifyToken = async (req, res, next) => {
 
     try {
         const { payload } = await jwtVerify(token, JWKS);
-        console.log(payload);
+        // console.log(payload);
         req.user = payload;
         next();
     } catch (error) {
@@ -141,7 +142,7 @@ async function run() {
 
 
 
-        app.patch("/rooms/:roomId", verifyToken, async (req, res) => {
+        app.patch("/rooms/:roomId", verifyToken,  async (req, res) => {
             const { roomId } = req.params;
             const updatedData = req.body;
             // console.log(updatedData);
@@ -195,7 +196,7 @@ async function run() {
 
 
 
-        app.post("/booking", async (req, res) => {
+        app.post("/booking",  async (req, res) => {
             const bookingData = req.body;
 
             const { roomId, date, startTime, endTime, hourlyRate } = bookingData;
