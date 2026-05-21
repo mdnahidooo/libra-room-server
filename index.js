@@ -166,7 +166,7 @@ async function run() {
 
 
 
-        app.get("/booking", async (req, res) => {
+        app.get("/booking",verifyToken, async (req, res) => {
             const result = await bookingCollection.find().toArray();
             console.log(result);
             res.send(result);
