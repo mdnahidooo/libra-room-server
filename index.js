@@ -168,6 +168,7 @@ async function run() {
 
         app.get("/booking", async (req, res) => {
             const result = await bookingCollection.find().toArray();
+            console.log(result);
             res.send(result);
         });
 
