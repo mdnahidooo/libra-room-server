@@ -131,7 +131,7 @@ async function run() {
         })
 
 
-        app.post('/rooms', async (req, res) => {
+        app.post('/rooms',verifyToken, async (req, res) => {
             const roomData = req.body;
             // console.log(roomData);
             const result = await roomCollection.insertOne(roomData);
@@ -142,7 +142,7 @@ async function run() {
 
 
 
-        app.patch("/rooms/:roomId", verifyToken,  async (req, res) => {
+        app.patch("/rooms/:roomId", verifyToken, async (req, res) => {
             const { roomId } = req.params;
             const updatedData = req.body;
             // console.log(updatedData);
@@ -177,7 +177,7 @@ async function run() {
 
         app.get("/booking", verifyToken, async (req, res) => {
             try {
-                
+
                 const currentUserId = req.user?.id || req.user?.sub || req.user?.email;
 
                 if (!currentUserId) {
@@ -210,7 +210,7 @@ async function run() {
 
 
 
-        app.post("/booking", async (req, res) => {
+        app.post("/booking", verifyToken, async (req, res) => {
             const bookingData = req.body;
 
             const { roomId, date, startTime, endTime, hourlyRate } = bookingData;
@@ -272,7 +272,7 @@ async function run() {
 
 
 
-        app.patch("/booking/:bookingId",verifyToken, async (req, res) => {
+        app.patch("/booking/:bookingId", verifyToken, async (req, res) => {
             const { bookingId } = req.params;
 
             const result = await bookingCollection.updateOne(
