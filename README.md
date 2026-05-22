@@ -211,6 +211,7 @@ The goal of **LibraRoom** is to create a smart and secure study room booking sys
 ## 📬 Submission
 
 - 🌐 **Live Link:** https://libra-room-client.vercel.app/ 
+- 🌐 **Live Server Link:** https://libra-room-server.vercel.app/  
 - 💻 **Client Repo:** https://github.com/mdnahidooo/libra-room-client 
 - 🖥️ **Server Repo:** https://github.com/mdnahidooo/libra-room-server 
 
