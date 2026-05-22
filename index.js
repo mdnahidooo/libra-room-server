@@ -166,23 +166,36 @@ async function run() {
 
 
 
-        app.get("/booking",verifyToken, async (req, res) => {
-            const result = await bookingCollection.find().toArray();
-            console.log(result);
-            res.send(result);
-        });
-
-
-
-        // app.get("/booking", async (req, res) => {
-        //     const userId = req.user?.sub;
-
-        //     const result = await bookingCollection
-        //         .find({ userId })
-        //         .toArray();
-
+        // app.get("/booking",verifyToken, async (req, res) => {
+        //     const result = await bookingCollection.find().toArray();
+        //     console.log(result);
         //     res.send(result);
         // });
+
+
+
+
+        app.get("/booking", verifyToken, async (req, res) => {
+            try {
+                
+                const currentUserId = req.user?.id || req.user?.sub || req.user?.email;
+
+                if (!currentUserId) {
+                    return res.status(401).json({ message: "Unauthorized access" });
+                }
+
+                const query = { userId: currentUserId };
+
+                const result = await bookingCollection.find(query).toArray();
+                // console.log(`Bookings fetched for user ${currentUserId}:`, result.length);
+                res.send(result);
+
+            } catch (error) {
+                console.error("Error fetching bookings:", error);
+                res.status(500).json({ message: "Internal server error" });
+            }
+        });
+
 
 
 
@@ -237,7 +250,7 @@ async function run() {
 
             const newBooking = {
                 ...bookingData,
-                userId: req.user?.sub,
+                userId: bookingData.userId || req.user?.sub,
                 date: normalizedDate,
                 startHour: start,
                 endHour: end,
