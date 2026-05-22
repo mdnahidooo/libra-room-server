@@ -216,6 +216,7 @@ async function run() {
             const conflict = await bookingCollection.findOne({
                 roomId,
                 date: normalizedDate,
+                status: { $ne: "cancelled" },
                 $or: [
                     {
                         startHour: { $lt: end },
